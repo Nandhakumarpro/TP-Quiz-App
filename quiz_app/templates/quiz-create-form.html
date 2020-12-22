@@ -1,0 +1,12 @@
+<form method="POST" >{% csrf_token %}
+    {{ quiz_form }}
+    {{ questions_formset.management_form }}
+    {% for  question_form,choices_form  in  questions_and_choices %}
+        {{ question_form }}
+        {{ choices_formset.management_form  }}
+        {% for choice_form in choices_form %}
+            {{ choice_form }}
+        {% endfor %}
+    {% endfor %}
+    <button type="submit" name="submit">Submit</button>
+</form>
