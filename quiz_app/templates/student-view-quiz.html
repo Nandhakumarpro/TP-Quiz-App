@@ -1,0 +1,31 @@
+<form method="POST" >{% csrf_token %}
+    {% if not Result %}
+        {% for form in ques_choices_form %}
+            {% ifequal form.label "is_correct" %}
+                <button  type="submit" >{{ form }}</button> <br>
+            {% else %}
+                {% ifequal form.label "Question" %}
+                    <pre><h2>{{ form.label }} {{ form.value }}</h2><br></pre>
+                {% else %}
+                     {{ form.label }}: {{ form.value }}
+                {% endifequal %}
+            {% endifequal %}
+        {% endfor %}
+    {% else %}
+        Question: {{ question.question }}
+        {% for choice in choices %}
+            {% if choice.is_correct %}
+                <span style="border-style:solid;border-color: green;background-color:green;"> {{ choice.choice_desc }}</span>
+            {% else %}
+                <p> {{ choice.choice_desc }}</p>
+            {% endif %}
+        {% endfor %}
+        <br><br>
+        {% if Correct %}
+            <p style="color:green">You Clicked Right Answer</p>
+        {% else %}
+            <p style="color:red">You Clicked Wrong Answer</p>
+        {% endif %}
+        <a href="/quiz/ques_choice/Student/edit/14/{{question_no}}/">Next </a>
+    {% endif %}
+</form>

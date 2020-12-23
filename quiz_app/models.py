@@ -7,13 +7,17 @@ class Quiz ( models.Model ) :
 
 class Questions ( models.Model ) :
     question = models.CharField( max_length=1000 , null=False,blank=False )
-    quiz_id = models.ForeignKey ( Quiz ,on_delete=models.CASCADE )
+    quiz = models.ForeignKey ( Quiz ,on_delete=models.CASCADE )
 
 
 class Choices ( models.Model ) :
     choice_desc = models.CharField ( max_length=255 ,null=False ,blank=False )
     is_correct = models.BooleanField ( default=False , blank=True )
-    question_id = models.ForeignKey ( Questions , on_delete=models.CASCADE )
+    question= models.ForeignKey ( Questions , on_delete=models.CASCADE )
+
+class Student ( models.Model ) :
+    pass
+
 
 
 

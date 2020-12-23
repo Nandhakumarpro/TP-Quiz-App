@@ -7,11 +7,12 @@ class QuizForm( forms.Form ) :
 
 class QuesChoiceForm ( forms.Form ) :
     def __init__(self,*args,**kwargs ) :
+        required  = kwargs .pop ( "required" , True )
         super( QuesChoiceForm , self ).__init__( *args,**kwargs )
-        self.fields[f"question"] = forms.CharField(max_length=1000, required=True)
+        self.fields[f"question"] = forms.CharField(max_length=1000, required=required,label="Question")
         for i in range( 1,5 ) :
-            self.fields[f"option{i}"] = forms.CharField ( max_length=255, required=True )
-            self.fields[f"is_correct{i}"] = forms.BooleanField( widget=forms.CheckboxInput(),required=False,label="is_correct" )
+            self.fields[f"option{i}"] = forms.CharField ( max_length=255, required=required  )
+            self.fields[f"is_correct{i}"] = forms.BooleanField( widget=forms.CheckboxInput(attrs={'style':'width:20px;height:20px;'}),required=False,label="is_correct" )
 
     def clean(self):
         data = self.cleaned_data
@@ -20,6 +21,13 @@ class QuesChoiceForm ( forms.Form ) :
             raise forms.ValidationError( "You Should select atleast one as correct answer!!!")
         if all(is_correct_list) :
             raise forms.ValidationError("You Should not select all as correct answer!!!")
+
+    def setDataForStudentViewForm ( self , question , choices ) :
+        self.fields[f"question"].initial = question.question
+        for i in range( 1,5 ) :
+            self.fields[f"option{i}"].initial = choices[i-1].choice_desc
+            # self.fields[f"is_correct{i}"].initial = forms.BooleanField( widget=forms.CheckboxInput(),required=False,label="is_correct" )
+
 
     class Meta :
         fields = "__all__"
