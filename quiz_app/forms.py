@@ -14,7 +14,13 @@ class QuesChoiceForm ( forms.Form ) :
             self.fields[f"is_correct{i}"] = forms.BooleanField( widget=forms.CheckboxInput(),required=False,label="is_correct" )
 
     def clean(self):
-        super( QuesChoiceForm ,self ).clean( )
+        data = self.cleaned_data
+        is_correct_list = [data.get(f"is_correct{i}") for i in range(1, 5)]
+        if not ( any(is_correct_list) ) :
+            raise forms.ValidationError( "You Should select atleast one as correct answer!!!")
+        if all(is_correct_list) :
+            raise forms.ValidationError("You Should not select all as correct answer!!!")
 
     class Meta :
         fields = "__all__"
+

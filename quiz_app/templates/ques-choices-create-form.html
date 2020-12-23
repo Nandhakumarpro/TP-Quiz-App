@@ -1,32 +1,11 @@
 <form method="POST"  enctype="application/x-www-form-urlencoded">{% csrf_token %}
-<!--    {{  ques_choices_formset.management_form }}-->
-    {{ ques_choices_form }}
 
+    {% for form in ques_choices_form %}
+        {{ form.label }}{{ form }}<br><br>
+    {% endfor %}
+    {% if errors %}
+        {{ errors  }}
+    {% endif %}
     <button type="submit" name="submit">Submit</button>
 </form>
 
-
-<!--    {% for i in range %}-->
-<!--        {% for question_form in questions_formset %}-->
-<!--            {{ question_form }}-->
-<!--        {% endfor %}-->
-<!--    {% endfor %}-->
-
-<!--    {{ quiz_form }}-->
-<!--&lt;!&ndash;    {{ questions_formset.management_form }}&ndash;&gt;-->
-<!--    {% for  question_form in  questions_formset %}-->
-<!--        {{ question_form }}-->
-<!--        {% for choice_formset in choices_formset %}-->
-<!--&lt;!&ndash;            {{ choice_formset.management_form  }}&ndash;&gt;-->
-<!--            {% for choice_form in choice_formset %}-->
-<!--                {{ choice_form }}-->
-<!--            {% endfor %}-->
-<!--        {% endfor %}-->
-<!--    {% endfor %}-->
-
-<!--    {% for question_form,choice_form in questions_choices %}-->
-<!--        {{ question_form.management_form }}-->
-<!--        {{ question_form }}-->
-<!--        {{ choice_form.management_form }}-->
-<!--        {{ choice_form }}-->
-<!--    {% endfor %}-->
