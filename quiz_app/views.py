@@ -1,42 +1,46 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import View
 from django.forms import formset_factory
-from django.http import HttpResponse
+from django.http import HttpResponse ,Http404
+from .models import  (
+    Quiz , Questions ,Choices
+    )
 
 from .forms import (
-    QuizForm , QuestionForm , ChoiceForm
+    QuizForm ,# QuestionForm , ChoiceForm,
+    QuesChoiceForm
     )
 # Create your views here.
 
-class CreateQuiz ( View ) :
-    template_name = "quiz-create-form.html"
+class CreateQuesChoice ( View ) :
+    template_name = "ques-choices-create-form.html"
+    form = QuesChoiceForm
     no_of_questions = 2
-    question_formset = formset_factory( QuestionForm ,extra=no_of_questions )
-    choice_formset = formset_factory( ChoiceForm , extra=(4*no_of_questions) )
     def get(self, request ) :
-        context ={ }
-        quiz_form = QuizForm( )
-        context["quiz_form"] = quiz_form
-        questions_formset = self.question_formset( )
-        context["questions_formset"] = questions_formset
-        choices_formset = self.choice_formset( )
-        context["choices_formset"] = choices_formset
-        context["questions_and_choices"] =  [ ( questions_formset[count] , choices_formset [(count*4):(count+1)*4]) for count in range(self.no_of_questions) ]
-        return render( request , template_name=self.template_name , context=context )
+        quiz_id = request.GET.get( "quiz_id" , None )
+        if quiz_id :
+            try :
+                Quiz.objects.get ( id = quiz_id )
+                context ={ }
+                context["ques_choices_form"] = self.form ( )
+                return render( request , template_name=self.template_name , context=context )
+            except Quiz.DoesNotExist :
+                raise  Http404
+        else :
+            return  redirect( "" )
 
     def post ( self, request ) :
-        quiz_form = QuizForm( request.POST or None )
-        questions_formset = self.question_formset ( request.POST or None )
-        choices_formset = self.choice_formset( request.POST or None  )
-        if quiz_form.is_valid() :
-            if choices_formset.is_valid() :
-                for c in choices_formset :
-                    print ( c.cleaned_data  )
-            else :
-                print ( choices_formset.errors )
-            print ( quiz_form.cleaned_data["quiz_title"] )
-            return HttpResponse ( "<h1>It is Successful</h1>" )
+        context = { }
+        form = self.form ( request.POST or None )
+        if form.is_valid ( ):
+            print(form.cleaned_data)
         else:
-            return HttpResponse ( f'<h1>{quiz_form.errors}</h1>' )
+            print ( form.errors )
+        return HttpResponse ( "<h1>It is Successful</h1>" )
+
+class CreateQuiz ( View ) :
+    template_name = "create-quiz.html"
+    def get ( self, request ) :
+        pass 
 
 

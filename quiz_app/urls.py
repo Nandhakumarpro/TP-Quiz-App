@@ -4,5 +4,6 @@ from . import views
 app_name = "quiz"
 
 urlpatterns = [
-    path( "create-quiz" ,views.CreateQuiz.as_view() , name= "create-quiz"  )
+    path( "ques_choice/create" ,views.CreateQuesChoice.as_view( ), name= "create-quiz"  ) ,
+
 ]
