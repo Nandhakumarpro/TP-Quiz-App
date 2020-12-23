@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.views.generic import View
 from django.forms import formset_factory
-from django.http import HttpResponse ,Http404
+from django.http import HttpResponse ,Http404 ,HttpResponseRedirect
 from .models import  (
     Quiz , Questions ,Choices
     )
@@ -20,14 +20,14 @@ class CreateQuesChoice ( View ) :
         quiz_id = request.GET.get( "quiz_id" , None )
         if quiz_id :
             try :
-                Quiz.objects.get ( id = quiz_id )
+                Quiz.objects.get ( id = int (quiz_id ) )
                 context ={ }
                 context["ques_choices_form"] = self.form ( )
                 return render( request , template_name=self.template_name , context=context )
             except Quiz.DoesNotExist :
                 raise  Http404
         else :
-            return  redirect( "" )
+            return  redirect( "quiz:create-quiz" )
 
     def post ( self, request ) :
         context = { }
@@ -40,7 +40,20 @@ class CreateQuesChoice ( View ) :
 
 class CreateQuiz ( View ) :
     template_name = "create-quiz.html"
+    form = QuizForm
+    context = {}
     def get ( self, request ) :
-        pass 
+        form = self.form ( )
+        self.context[ "quiz_form"] = form
+        return  render( request , template_name=self.template_name ,context=self.context )
 
-
+    def post ( self , request ) :
+        form = self.form ( request.POST )
+        if form.is_valid( ) :
+            quiz = Quiz ( )
+            quiz.title = form.cleaned_data["quiz_title"]
+            quiz.save( )
+            redir = reverse("quiz:create-ques_choice")
+            return HttpResponseRedirect ( redir+f"?quiz_id={quiz.id}" )
+        else :
+            raise Http404
