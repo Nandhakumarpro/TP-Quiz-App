@@ -11,7 +11,7 @@ class Questions ( models.Model ) :
 
 
 class Choices ( models.Model ) :
-    choice = models.CharField ( max_length=255 ,null=False ,blank=False )
+    choice_desc = models.CharField ( max_length=255 ,null=False ,blank=False )
     is_correct = models.BooleanField ( default=False , blank=True )
     question_id = models.ForeignKey ( Questions , on_delete=models.CASCADE )
 

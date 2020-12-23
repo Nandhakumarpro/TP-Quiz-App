@@ -15,26 +15,31 @@ class CreateQuesChoice ( View ) :
     form = QuesChoiceForm
     no_of_questions = 2
     context = {"errors" : None }
-    def get(self, request ) :
-        quiz_id = request.GET.get( "quiz_id" , None )
-        if quiz_id :
-            try :
-                Quiz.objects.get ( id = int (quiz_id ) )
-                self.context["ques_choices_form"] = self.form ( )
-                return render( request , template_name=self.template_name , context=self.context )
-            except Quiz.DoesNotExist :
-                raise  Http404
-        else :
+    def get(self, request,quiz_id ) :
+        try :
+            Quiz.objects.get ( id = int (quiz_id ) )
+            self.context["ques_choices_form"] = self.form ( )
+            self.context["quiz_id"] = quiz_id
+            return render( request , template_name=self.template_name , context=self.context )
+        except Quiz.DoesNotExist :
             return  redirect( "quiz:create-quiz" )
 
-    def post ( self, request ) :
+    def post ( self, request, quiz_id ) :
         form = self.form ( request.POST or None )
         self.context["ques_choices_form"] = form
         if form.is_valid ( ):
-
-            return HttpResponse("<h1>UpdateLine</h1>")
-            # else :
-                # return  render(request, template_name=self.template_name, context=self.context
+            data = form.cleaned_data
+            question = Questions ( question = data.get(
+                "question" ), quiz_id = Quiz.objects.get ( id = int (quiz_id ) )
+            )
+            question.save( )
+            for i in range ( 1 , 5 ) :
+                choice:Choices = Choices( )
+                choice.choice_desc = data[f"option{i}"]
+                choice.is_correct = data[f"is_correct{i}"]
+                choice.question_id = question
+                choice.save()
+            return HttpResponse( "<h1>Successfully Saved</h1>")
         else:
             self.context["errors"] = form.errors["__all__"]
             return render( request , template_name=self.template_name ,context=self.context )
@@ -54,8 +59,7 @@ class CreateQuiz ( View ) :
             quiz = Quiz ( )
             quiz.title = form.cleaned_data["quiz_title"]
             quiz.save( )
-            redir = reverse("quiz:create-ques_choice")
-            return HttpResponseRedirect ( redir+f"?quiz_id={quiz.id}" )
+            return redirect ( "quiz:create-ques_choice" , quiz_id = quiz.id  )
         else :
             raise Http404
 
