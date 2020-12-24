@@ -16,7 +16,10 @@ def is_logged_in( function ) :
 def is_Student( function ) :
     @wraps(function)
     def wrap ( self, request, *args, **kwargs ) :
-        if Student.objects.filter( username=request.user.username ).first() :
+        print ( request.user.username  )
+        student= Student.objects.filter( username=request.user.username ).first()
+        if student :
+            self.student = student
             return function ( self, request , *args , **kwargs )
         else :
             return HttpResponse ( "<h1>You are not a Student.So, you are not allowed" )

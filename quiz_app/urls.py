@@ -11,6 +11,7 @@ urlpatterns = [
     path( "ques_choice/Student/edit/<int:quiz_id>/<int:question_no>/" , views.QuizViewForStudent.as_view() , name = "ques_choice-view-student") ,
     path( "signup/student" , views.SignUpStudent.as_view() , name="signup-student") ,
     path( "signup/admin" , views.SignUpAdmin.as_view( ), name="signup-admin" ) ,
-    path( "login", views.Login.as_view() , name ="login" )
+    path( "login", views.Login.as_view() , name ="login" ),
+    path( "report/student/<int:quiz_id>", views.StudentTestReport.as_view() , name ="student-quiz-report" )
 
 ]

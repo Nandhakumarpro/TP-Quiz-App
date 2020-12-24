@@ -1,0 +1,14 @@
+{% if not test_completed %}
+    <h1>Your are not completed the Test!!!.Please Finish it </h1>
+{% else %}
+    <pre>
+    Quiz Title : {{ title }}<br>
+    Score      : ({{ score }}/{{ NO_OF_QUESTIONS }})<br>
+    Time Taken : {{ time_taken }} secs<br>
+    </pre>
+{% endif %}
+{% if messages %}
+    {% for message in messages %}
+        {{ message }}
+    {% endfor %}
+{% endif %}

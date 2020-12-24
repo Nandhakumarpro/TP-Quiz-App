@@ -3,16 +3,16 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.contrib.auth.hashers import make_password , check_password
 from django.contrib.auth.models import User
+import time
 
 # Create your models here.
 
 class Quiz ( models.Model ) :
-    title = models.CharField( max_length=50 , null=False , blank=False )
+    title = models.CharField( max_length=50 , null=False , blank=False , unique=True)
 
 class Questions ( models.Model ) :
     question = models.CharField( max_length=1000 , null=False,blank=False )
     quiz = models.ForeignKey ( Quiz ,on_delete=models.CASCADE )
-
 
 class Choices ( models.Model ) :
     choice_desc = models.CharField ( max_length=255 ,null=False ,blank=False )
@@ -36,14 +36,19 @@ class Admin (models.Model):
         self.password = make_password(self.password)
         super(Admin, self).save(*args, **kwargs)
 
+def getTimeNow( ) :
+    return time.time()
 
 class StudentQuizTrack ( models.Model ) :
     student = models.ForeignKey ( Student , on_delete=models.CASCADE )
     quiz = models.ForeignKey ( Quiz , on_delete=models.CASCADE  )
     questions_completed = models.IntegerField ( default=0 )
-    Score = models.FloatField ( default=0.0 )
+    score = models.IntegerField ( default=0 )
+    start_time = models.FloatField( default= getTimeNow )
+    end_time = models.FloatField( default=getTimeNow )
 
 class StudentQuesAnsTrack(models.Model ) :
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     question = models.ForeignKey ( Questions , on_delete=models.CASCADE )
     student_answer = models.IntegerField ( null=False )
 
@@ -69,3 +74,4 @@ def create_admin_user_acc ( sender , instance = None , created = False , **kwarg
             user.save()
     except Exception as e :
         instance.delete( )
+
