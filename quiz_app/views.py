@@ -3,6 +3,7 @@ from django.views.generic import View
 from django.forms import formset_factory
 from django.http import HttpResponse ,Http404 ,HttpResponseRedirect
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 
 from .models import  (
     Quiz , Questions ,Choices,Student,Admin, StudentQuizTrack,StudentQuesAnsTrack
@@ -11,8 +12,6 @@ from .forms import (
     QuizForm ,# QuestionForm , ChoiceForm,
     QuesChoiceForm,SignUpForm, LoginForm
     )
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import  User
 from .support import (
     getNoOfQuesForLinkedQuizId ,getValidQuizzesTitles,getNthQuestionOfQuiz,getChoicesOfQuestion
 )
@@ -102,6 +101,7 @@ class ListQuiz ( View ) :
         return render( request , template_name=self.template_name , context=self.context )
 
 class QuizViewForStudent( View ) :
+    answer_map = { x:y for x,y in zip( [0,1,2,3] , [ "a","b", "c","d" ] ) }
     template_name = "student-view-quiz.html"
     context = {"errors": None, "message": None, "Result":False }
     form = QuesChoiceForm
@@ -117,14 +117,29 @@ class QuizViewForStudent( View ) :
     @is_Student
     @is_logged_in
     def get ( self ,request , quiz_id , question_no ) :
-        self.context["quiz_id"] = quiz_id
-        question,choices = self.getQuesAndChoices( quiz_id , question_no  )
-        ques_choices_form = self.form ( required=False )
-        ques_choices_form.setDataForStudentViewForm( question=question , choices= choices )
-        self.context [ "ques_choices_form" ]  = ques_choices_form
-        self.context["Result"] = False
-        return  render( request , template_name=self.template_name , context=self.context )
-
+        sqt, created = StudentQuizTrack.objects.get_or_create(student=self.student,
+                                                              quiz=Quiz.objects.get(id=quiz_id))
+        sqt.save( )
+        if ( question_no-1 >= sqt.questions_completed) :
+            if  question_no-1!=sqt.questions_completed :
+                messages.error( request , "You Should Complete the Question One By One" )
+            question_no = sqt.questions_completed+1
+            self.context["quiz_id"] = quiz_id
+            question,choices = self.getQuesAndChoices( quiz_id , question_no  )
+            ques_choices_form = self.form ( required=False )
+            ques_choices_form.setDataForStudentViewForm( question=question , choices= choices )
+            self.context [ "ques_choices_form" ]  = ques_choices_form
+            self.context["Result"] = False
+            return  render( request , template_name=self.template_name , context=self.context )
+        else :
+            self.context["Result"] = True
+            question, choices = self.getQuesAndChoices(quiz_id, question_no)
+            self.context["question_no"] = question_no + 1
+            sqat = StudentQuesAnsTrack.objects.get( student =self.student, question = question )
+            self.context["student_clicked"] = sqat.student_answer + 1
+            self.context["next_url"] =( f"/quiz/ques_choice/Student/edit/{quiz_id}/{question_no+1}/" if
+                                        question_no+1 <= NO_OF_QUESTIONS else f"/quiz/report/student/{quiz_id}" )
+            return render(request, template_name=self.template_name, context=self.context)
     @is_Student
     @is_logged_in
     def post( self , request, quiz_id , question_no  ) :
@@ -151,6 +166,7 @@ class QuizViewForStudent( View ) :
                     sqt.save()
                     self.context["Result"] = True
                     self.context["question_no"] = question_no+1
+                    self.context["student_clicked"] =  sqat.student_answer + 1
                     return render( request , template_name=self.template_name , context=self.context )
             else:
                 return HttpResponse("<h1>Please Click Middle Of the Button</h1>")
@@ -231,7 +247,6 @@ class Login( View ) :
             return render(request, self.template_name, self.context)
 
 class StudentTestReport( View ) :
-    answer_map = { x:y for x,y in zip( [0,1,2,3] , [ "a","b", "c","d" ] ) }
     template_name = "student-test-report.html"
     @is_Student
     @is_logged_in
@@ -249,8 +264,4 @@ class StudentTestReport( View ) :
         else:
             messages.error( request , "You Are Not taken the this Quiz till..." )
         return render ( request , self.template_name , context  )
-
-
-
-
 

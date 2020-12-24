@@ -25,8 +25,10 @@
             <p style="color:green">You Clicked Right Answer</p>
         {% else %}
             <p style="color:red">You Clicked Wrong Answer</p>
+            <p style="color:red">You Clicked Option({{ student_clicked }}) </p>
         {% endif %}
-        <a href="/quiz/ques_choice/Student/edit/{{quiz_id}}/{{question_no}}/">Next Link:Need to be changed as generic</a>
+        <a href="{{ next_url }}">Next Link</a>
+
     {% endif %}
     {% if messages %}
         {% for message  in messages %}
