@@ -2,16 +2,22 @@ from django.shortcuts import render, redirect, reverse
 from django.views.generic import View
 from django.forms import formset_factory
 from django.http import HttpResponse ,Http404 ,HttpResponseRedirect
+from django.contrib import messages
+
 from .models import  (
-    Quiz , Questions ,Choices
+    Quiz , Questions ,Choices,Student,Admin
     )
 from .forms import (
     QuizForm ,# QuestionForm , ChoiceForm,
-    QuesChoiceForm
+    QuesChoiceForm,SignUpForm, LoginForm
     )
-
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import  User
 from .support import (
     getNoOfQuesForLinkedQuizId ,getValidQuizzesTitles,getNthQuestionOfQuiz,getChoicesOfQuestion
+)
+from .authentication import (
+    is_logged_in , is_Admin, is_Student
 )
 
 NO_OF_QUESTIONS = 2
@@ -21,6 +27,9 @@ class CreateQuesChoice ( View ) :
     form = QuesChoiceForm
     no_of_questions = NO_OF_QUESTIONS
     context = {"errors" : None , "message" : None }
+
+    @is_logged_in
+    @is_Admin
     def get(self, request,quiz_id ) :
         try :
             Quiz.objects.get ( id = int (quiz_id ) )
@@ -35,6 +44,8 @@ class CreateQuesChoice ( View ) :
         except Quiz.DoesNotExist :
             return  redirect( "quiz:create-quiz" )
 
+    @is_logged_in
+    @is_Admin
     def post ( self, request, quiz_id ) :
         form = self.form ( request.POST or None )
         self.context["ques_choices_form"] = form
@@ -59,11 +70,16 @@ class CreateQuiz ( View ) :
     template_name = "create-quiz.html"
     form = QuizForm
     context = {"errors" : None , "message" : None}
+
+    @is_logged_in
+    @is_Admin
     def get ( self, request ) :
         form = self.form ( )
         self.context[ "quiz_form"] = form
         return  render( request , template_name=self.template_name ,context=self.context )
 
+    @is_logged_in
+    @is_Admin
     def post ( self , request ) :
         form = self.form ( request.POST )
         if form.is_valid( ) :
@@ -95,6 +111,8 @@ class QuizViewForStudent( View ) :
         self.context[ "choices" ] = choices
         return (question, choices )
 
+    @is_logged_in
+    @is_Student
     def get ( self ,request , quiz_id , question_no ) :
         question,choices = self.getQuesAndChoices( quiz_id , question_no  )
         ques_choices_form = self.form ( required=False )
@@ -103,6 +121,8 @@ class QuizViewForStudent( View ) :
         self.context["Result"] = False
         return  render( request , template_name=self.template_name , context=self.context )
 
+    @is_logged_in
+    @is_Student
     def post( self , request, quiz_id , question_no  ) :
         question, choices = self.getQuesAndChoices(quiz_id, question_no)
         form = self.form ( request.POST,required=False )
@@ -120,6 +140,66 @@ class QuizViewForStudent( View ) :
         else :
             return HttpResponse( "<h1>Please Click Middle Of the Button</h1>" )
 
-# class QuestionResultView ( View ) :
+def home ( request ):
+    return HttpResponse("<h1>Welcome To Home Page!!!</h1>")
 
+class SignUpStudent( View ) :
+    form = SignUpForm
+    template_name = "signup.html"
+    context = { "form_title":"SignUp Form" }
+    model = Student
+    def get ( self, request ) :
+        self.context["form"] = self.form( )
+        return render( request , template_name=self.template_name , context=self.context )
+
+    def post(self,request ) :
+        self.context["form"]= form = self.form( request.POST or None )
+        if form.is_valid() :
+            data = form.cleaned_data
+            username = data["username"]
+            password = data ["password"]
+            student = self.model ( )
+            student.username = username
+            student.password = password
+            try :
+                student.save( )
+                if self.model.objects.filter( username=username ).first() :
+                    return HttpResponse("<h1>SuccessFully Created!!!")
+                else :
+                    return HttpResponse("<h1>Username Conflict is there.Try another One!!!")
+            except  :
+                return HttpResponse("<h1>Username Conflict is there.Try another One!!!")
+        else:
+            self.context[ "errors" ] = form.errors["__all__"]
+            return  render( request , self.template_name , self.context  )
+
+class SignUpAdmin(SignUpStudent ) :
+    model = Admin
+    '''
+    In Super class post method student will be replaced by admin 
+    
+    '''
+
+class Login( View ) :
+    template_name = "signup.html" #Same Form used here
+    context = { "form_title":"Login Form" }
+    form = LoginForm
+    def get ( self, request ) :
+        self.context["form"] = self.form( )
+        return render( request , self.template_name, self.context )
+    def post(self,request ) :
+        self.context["form"] =form = self.form( request.POST or None )
+        if form.is_valid( ) :
+            data = form.cleaned_data
+            username = data["username"]
+            password = data ["password"]
+            user = authenticate(request, username=username, password=password)
+            if user is not None :
+                login ( request , user )
+            else :
+                messages.error( request , "Your Credentials are Wrong .Please enter again right!!!" )
+                return render(request, self.template_name, self.context)
+        else :
+            self.context["errors"] = form.errors["__all__"]
+            return render(request, self.template_name, self.context)
 

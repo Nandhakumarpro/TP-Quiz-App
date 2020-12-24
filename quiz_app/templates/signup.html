@@ -1,0 +1,10 @@
+<form method="POST" enctype="application/x-www-form-urlencoded">{% csrf_token %}
+    <h1 style="color:blue;">{{ form_title }}</h1>
+    {{ form }}
+    <button type="submit" name=""submit>Submit</button>
+    {% if messages %}
+        {% for message  in messages %}
+            {{ message }}
+        {% endfor %}
+    {% endif %}
+</form>

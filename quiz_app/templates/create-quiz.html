@@ -2,4 +2,9 @@
     Please enter the title For Your Quiz:<br>
     {{ quiz_form }}<br>
     <button type="submit" name="submit">Submit</button>
+    {% if messages %}
+        {% for message  in messages %}
+            {{ message }}
+        {% endfor %}
+    {% endif %}
 </form>

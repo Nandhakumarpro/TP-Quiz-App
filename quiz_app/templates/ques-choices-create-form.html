@@ -7,5 +7,10 @@
         {{ errors  }}
     {% endif %}
     <button type="submit" name="submit">Submit</button>
+    {% if messages %}
+        {% for message  in messages %}
+            {{ message }}
+        {% endfor %}
+    {% endif %}
 </form>
 

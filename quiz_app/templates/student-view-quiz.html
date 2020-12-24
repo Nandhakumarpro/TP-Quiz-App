@@ -28,4 +28,9 @@
         {% endif %}
         <a href="/quiz/ques_choice/Student/edit/14/{{question_no}}/">Next </a>
     {% endif %}
+    {% if messages %}
+        {% for message  in messages %}
+            {{ message }}
+        {% endfor %}
+    {% endif %}
 </form>

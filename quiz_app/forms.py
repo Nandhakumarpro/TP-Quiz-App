@@ -28,7 +28,14 @@ class QuesChoiceForm ( forms.Form ) :
             self.fields[f"option{i}"].initial = choices[i-1].choice_desc
             # self.fields[f"is_correct{i}"].initial = forms.BooleanField( widget=forms.CheckboxInput(),required=False,label="is_correct" )
 
-
     class Meta :
         fields = "__all__"
+
+class SignUpForm( forms.Form ) :
+    username = forms.CharField ( max_length=100, required=True, label= "UserName:" )
+    password = forms.CharField ( max_length=20 , required=True, label= "Password:",widget=forms.PasswordInput() )
+
+class LoginForm(SignUpForm ):
+    pass
+
 
