@@ -20,7 +20,7 @@ from .authentication import (
 )
 import time
 
-NO_OF_QUESTIONS = 2
+NO_OF_QUESTIONS = 10
 
 class CreateQuesChoice ( View ) :
     template_name = "ques-choices-create-form.html"
